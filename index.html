@@ -1,1 +1,136 @@
-"Hello world"
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wplace 실시간 국내 주요 지점 감시기</title>
+  <style>
+    :root{ --frame-bg: #e6e5e5; --gap: 18px; --accent: #0055ff; }
+    html,body{height:100%;margin:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      background:linear-gradient(135deg,#f8f9fa,#e9ecef);color:#111}
+    .wrap{max-width:1200px;margin:28px auto;padding:20px}
+    header{text-align:center;margin-bottom:24px}
+    header h1{font-size:26px;margin:0;color:var(--accent)}
+    header p{font-size:15px;color:#444;margin:6px 0 0}
+    .controls{margin:20px 0;text-align:center}
+    .controls label{font-size:14px;margin-right:8px}
+    .controls input{width:70px;padding:4px;font-size:14px;text-align:center;border:1px solid #ccc;border-radius:6px}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:var(--gap)}
+    .card{background:#fff;border-radius:12px;padding:14px;display:flex;flex-direction:column;align-items:center;
+      box-shadow:0 6px 18px rgba(0,0,0,0.08);transition:transform 0.2s ease, box-shadow 0.2s ease}
+    .card:hover{transform:translateY(-4px);box-shadow:0 10px 22px rgba(0,0,0,0.12)}
+    .card .meta{width:100%;display:flex;justify-content:center;align-items:center;margin-bottom:10px}
+    .card .meta strong{font-size:16px;color:#222}
+    .frame{width:100%;height:420px;border-radius:8px;overflow:hidden;position:relative;background:var(--frame-bg)}
+    .frame img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;transition:opacity 0.3s ease}
+    .frame img.hidden{opacity:0}
+    @media (max-width:520px){.frame{height:300px}}
+
+    /* 주요 작품 섹션 */
+    .featured {margin-top:40px;}
+    .featured h1 {font-size:26px; color:var(--accent); text-align:center; margin-bottom:20px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Wplace 실시간 국내 주요 지점 감시기</h1>
+      <p>각 사진은 일정 시간마다 자동 새로고침 됩니다. 새로고침 시간을 직접 설정할 수 있습니다.</p>
+    </header>
+
+    <div class="controls">
+      <label for="interval">새로고침 간격(초):</label>
+      <input type="number" id="interval" value="5" min="1" />
+    </div>
+
+    <!-- 주요 지점 -->
+    <main class="grid">
+      <article class="card" id="card-1">
+        <div class="meta">
+          <strong>서울 태극기</strong>
+        </div>
+        <div class="frame" id="frame-1">
+          <img id="img-1" data-src="https://backend.wplace.live/files/s0/tiles/1746/793.png" alt="서울 태극기" />
+        </div>
+      </article>
+
+      <article class="card" id="card-2">
+        <div class="meta">
+          <strong>독도 태극기</strong>
+        </div>
+        <div class="frame" id="frame-2">
+          <img id="img-2" data-src="https://backend.wplace.live/files/s0/tiles/1774/795.png" alt="독도 태극기" />
+        </div>
+      </article>
+    </main>
+
+    <!-- 주요 작품 -->
+    <section class="featured">
+      <h1>주요 작품</h1>
+      <div class="grid">
+        <article class="card" id="card-3">
+          <div class="meta">
+            <strong>거쿠</strong>
+          </div>
+          <div class="frame" id="frame-3">
+            <img id="img-3" data-src="https://backend.wplace.live/files/s0/tiles/1744/800.png" alt="거쿠" />
+          </div>
+        </article>
+        <article class="card" id="card-4">
+          <div class="meta">
+            <strong>시즈카&마리나 (테스트)</strong>
+          </div>
+          <div class="frame" id="frame-4">
+            <img id="img-4" data-src="https://backend.wplace.live/files/s0/tiles/1825/760.png" alt="시즈카&마리나 (테스트)" />
+          </div>
+        </article>
+
+      </div>
+    </section>
+  </div>
+
+  <script>
+    let intervalSec = 5;
+    let timer;
+    const imgs = [
+      document.getElementById('img-1'),
+      document.getElementById('img-2'),
+      document.getElementById('img-3') // 주요 작품 포함
+    ];
+
+    function refreshAll(){
+      imgs.forEach(img => {
+        const base = img.getAttribute('data-src');
+        if(!base) return;
+        const url = base + (base.includes('?') ? '&' : '?') + 't=' + Date.now();
+
+        const preload = new Image();
+        preload.onload = () => {
+          img.classList.add('hidden');
+          setTimeout(() => {
+            img.src = url;
+            img.classList.remove('hidden');
+          }, 200);
+        };
+        preload.src = url;
+      });
+    }
+
+    function startInterval(){
+      clearInterval(timer);
+      timer = setInterval(refreshAll, intervalSec * 1000);
+    }
+
+    document.getElementById('interval').addEventListener('change', e => {
+      intervalSec = parseInt(e.target.value, 10) || 5;
+      startInterval();
+    });
+
+    // 초기 로드 및 시작
+    refreshAll();
+    startInterval();
+
+    window.addEventListener('beforeunload', () => clearInterval(timer));
+  </script>
+</body>
+</html>
