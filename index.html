@@ -6,8 +6,13 @@
   <title>Wplace 실시간 국내 주요 지점 감시기</title>
   <style>
     :root{ --frame-bg: #e6e5e5; --gap: 18px; --accent: #0055ff; }
-    html,body{height:100%;margin:0;font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
-      background:linear-gradient(135deg,#f8f9fa,#e9ecef);color:#111}
+    html,body{
+      height:100%;
+      margin:0;
+      font-family:'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+      background:#f8f9fa;
+      color:#111
+    }
     .wrap{max-width:1200px;margin:28px auto;padding:20px}
     header{text-align:center;margin-bottom:24px}
     header h1{font-size:26px;margin:0;color:var(--accent)}
@@ -24,18 +29,55 @@
     .frame{width:100%;height:420px;border-radius:8px;overflow:hidden;position:relative;background:var(--frame-bg)}
     .frame img{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;transition:opacity 0.3s ease}
     .frame img.hidden{opacity:0}
+
+    /* 서울 태극기 */
+    .frame#frame-1 img { transform: scale(3.2) translateY(-30%); }
+    /* 독도 태극기 */
+    .frame#frame-2 img { transform: scale(2.5) translate(18% ,30%); }
+
     @media (max-width:520px){.frame{height:300px}}
 
-    /* 주요 작품 섹션 */
+    /* 섹션 공통 스타일 */
     .featured {margin-top:40px;}
-    .featured h1 {font-size:26px; color:var(--accent); text-align:center; margin-bottom:20px;}
+    .featured h1 {font-size:26px; color:var(--accent); text-align:center; margin-bottom:10px;}
+    .featured p.notice {font-size:12px; color:#666; text-align:center; margin:0 0 20px;}
+
+    /* 타일 그리드 스타일 */
+    .tile-grid {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .tile-row {
+      display: flex;
+      gap: 0;
+    }
+    .tile-row img {
+      width: 200px;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      transition: opacity 0.3s ease;
+    }
+    .tile-row img.hidden {
+      opacity: 0;
+    }
+    @media (max-width: 650px) {
+      .tile-row img {
+        width: 120px;
+        height: 120px;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <h1>Wplace 실시간 국내 주요 지점 감시기</h1>
-      <p>각 사진은 일정 시간마다 자동 새로고침 됩니다. 새로고침 시간을 직접 설정할 수 있습니다.</p>
+      <p>각 사진은 설정한 시간마다 자동으로 새로고침 됩니다. (5초 권장)</p>
     </header>
 
     <div class="controls">
@@ -64,6 +106,37 @@
       </article>
     </main>
 
+    <!-- 태극기 주변 -->
+    <section class="featured">
+      <h1>태극기 주변</h1>
+      <p class="notice">※ 태극기 주변 이미지는 자동으로 새로고침되지 않습니다. 잦은 새로고침은 제한이 걸릴 수 있으니 주의해 주세요.</p>
+      <div class="card" style="padding:20px; max-width:640px; margin:0 auto; text-align:center;">
+        <div class="meta">
+          <strong>서울 태극기 주변</strong>
+        </div>
+        <div class="tile-grid">
+          <!-- 첫 번째 줄 -->
+          <div class="tile-row">
+            <img id="tile-1" data-src="https://backend.wplace.live/files/s0/tiles/1745/792.png" alt="타일 1-1" />
+            <img id="tile-2" data-src="https://backend.wplace.live/files/s0/tiles/1746/792.png" alt="타일 1-2" />
+            <img id="tile-3" data-src="https://backend.wplace.live/files/s0/tiles/1747/792.png" alt="타일 1-3" />
+          </div>
+          <!-- 두 번째 줄 -->
+          <div class="tile-row">
+            <img id="tile-4" data-src="https://backend.wplace.live/files/s0/tiles/1745/793.png" alt="타일 2-1" />
+            <img id="tile-5" data-src="https://backend.wplace.live/files/s0/tiles/1746/793.png" alt="타일 2-2" />
+            <img id="tile-6" data-src="https://backend.wplace.live/files/s0/tiles/1747/793.png" alt="타일 2-3" />
+          </div>
+          <!-- 세 번째 줄 -->
+          <div class="tile-row">
+            <img id="tile-7" data-src="https://backend.wplace.live/files/s0/tiles/1745/794.png" alt="타일 3-1" />
+            <img id="tile-8" data-src="https://backend.wplace.live/files/s0/tiles/1746/794.png" alt="타일 3-2" />
+            <img id="tile-9" data-src="https://backend.wplace.live/files/s0/tiles/1747/794.png" alt="타일 3-3" />
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- 주요 작품 -->
     <section class="featured">
       <h1>주요 작품</h1>
@@ -84,7 +157,6 @@
             <img id="img-4" data-src="https://backend.wplace.live/files/s0/tiles/1825/760.png" alt="시즈카&마리나 (테스트)" />
           </div>
         </article>
-
       </div>
     </section>
   </div>
@@ -92,14 +164,23 @@
   <script>
     let intervalSec = 5;
     let timer;
+
+    // 자동 새로고침 대상 (타일 제외)
     const imgs = [
       document.getElementById('img-1'),
       document.getElementById('img-2'),
-      document.getElementById('img-3') // 주요 작품 포함
+      document.getElementById('img-3'),
+      document.getElementById('img-4')
     ];
 
-    function refreshAll(){
-      imgs.forEach(img => {
+    // 페이지 최초 로드용 (타일 포함)
+    const allImgs = [
+      ...imgs,
+      ...Array.from({length:9}, (_,i)=>document.getElementById(`tile-${i+1}`))
+    ];
+
+    function refreshImages(list){
+      list.forEach(img => {
         const base = img.getAttribute('data-src');
         if(!base) return;
         const url = base + (base.includes('?') ? '&' : '?') + 't=' + Date.now();
@@ -112,8 +193,15 @@
             img.classList.remove('hidden');
           }, 200);
         };
+        preload.onerror = () => {
+          console.warn('Failed to load image:', url);
+        };
         preload.src = url;
       });
+    }
+
+    function refreshAll(){
+      refreshImages(imgs); // 자동 새로고침 대상만
     }
 
     function startInterval(){
@@ -126,8 +214,9 @@
       startInterval();
     });
 
-    // 초기 로드 및 시작
-    refreshAll();
+    // 초기 로드 시 (모든 이미지 1번 로드)
+    refreshImages(allImgs);
+    // 자동 새로고침 시작 (타일 제외)
     startInterval();
 
     window.addEventListener('beforeunload', () => clearInterval(timer));
