@@ -140,12 +140,12 @@
   <div class="wrap">
     <header>
       <h1>Wplace 실시간 국내 주요 지점 감시기</h1>
-      <p>각 사진은 설정한 시간마다 자동으로 새로고침 됩니다. (5초 권장)</p>
+      <p>각 사진은 설정한 시간마다 자동으로 새로고침 됩니다. (기본값 30초)</p>
     </header>
 
     <div class="controls">
       <label for="interval">새로고침 간격(초):</label>
-      <input type="number" id="interval" value="5" min="1" />
+      <input type="number" id="interval" value="30" min="1" />
     </div>
 
     <!-- 주요 지점 -->
@@ -245,7 +245,7 @@
   </footer>
 
   <script>
-    let intervalSec = 5;
+    let intervalSec = 30;
     let timer;
 
     // 자동 새로고침 대상 (타일 제외)
