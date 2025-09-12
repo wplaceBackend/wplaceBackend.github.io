@@ -328,30 +328,9 @@
       startInterval();
     });
 
-    // 실제 방문자 카운터 (CountAPI 사용)
-    async function updateVisitorCount() {
-      try {
-        // 카운터 증가 및 현재 값 가져오기
-        const response = await fetch('https://api.countapi.xyz/hit/wplaceBackend.github.io/visits');
-        const data = await response.json();
-        
-        if (data.value) {
-          document.getElementById('visitor-count').textContent = data.value.toLocaleString();
-        } else {
-          throw new Error('API 응답 오류');
-        }
-      } catch (error) {
-        console.error('카운터 업데이트 실패:', error);
-        // 백업: Hits.sh 이미지 방식으로 대체
-        const counterElement = document.getElementById('visitor-count');
-        counterElement.innerHTML = '<img src="https://hits.sh/github.com/wplaceBackend/wplaceBackend.github.io.svg?style=flat-square&label=&color=0055ff" alt="조회수" style="vertical-align: middle;">';
-      }
-    }
-
     // 페이지 로드 시 실행
     refreshImages(allImgs);
     startInterval();
-    updateVisitorCount();
 
     window.addEventListener('beforeunload', () => clearInterval(timer));
   </script>
