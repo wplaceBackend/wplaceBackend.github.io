@@ -193,28 +193,6 @@ header p {
   opacity: 0;
 }
 
-/* 접속자 카운터 */
-.visitor-counter {
-  margin-top: 30px;
-  text-align: center;
-  font-size: 14px;
-  color: #666;
-  padding: 12px 20px;
-  background: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  max-width: 300px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.visitor-counter .count {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--accent);
-  margin: 0 4px;
-}
-
 /* 하단 제작자 */
 footer {
   margin-top: 40px;
