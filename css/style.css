@@ -6,6 +6,7 @@
 
 html,
 body {
+  width: 100%;
   height: 100%;
   margin: 0;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -152,32 +153,6 @@ header p {
   opacity: 0
 }
 
-/* 서울 태극기 */
-.frame#frame-1 img {
-  transform: scale(3.2) translateY(-30%);
-}
-
-/* 독도 태극기 */
-.frame#frame-2 img {
-  transform: scale(2.5) translate(18%, 30%);
-}
-
-/* 거쿠 */
-.frame#frame-3 img {
-  transform: scale(1.36) translate(-10%, -13%);
-}
-
-/* 통깡이 */
-.frame#frame-4 img {
-  transform: scale(2.2) translate(-22%, 5%);
-}
-
-@media (max-width:520px) {
-  .frame {
-    height: 300px
-  }
-}
-
 /* 섹션 공통 스타일 */
 .featured {
   margin-top: 40px;
@@ -199,36 +174,23 @@ header p {
 
 /* 타일 그리드 스타일 */
 .tile-grid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0;
-  max-width: 600px;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  width: 100%;
+  height: 100%;
 }
 
-.tile-row {
-  display: flex;
-  gap: 0;
-}
-
-.tile-row img {
-  width: 200px;
-  height: 200px;
+.tile-grid img {
+  width: 100%;
+  height: 100%;
   object-fit: cover;
   display: block;
   transition: opacity 0.3s ease;
 }
 
-.tile-row img.hidden {
+.tile-grid img.hidden {
   opacity: 0;
-}
-
-@media (max-width: 650px) {
-  .tile-row img {
-    width: 120px;
-    height: 120px;
-  }
 }
 
 /* 접속자 카운터 */
