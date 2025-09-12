@@ -121,6 +121,28 @@
       }
     }
 
+    /* 접속자 카운터 */
+    .visitor-counter {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 14px;
+      color: #666;
+      padding: 12px 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      max-width: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .visitor-counter .count {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--accent);
+      margin: 0 4px;
+    }
+
     /* 하단 제작자 */
     footer {
       margin-top: 40px;
@@ -159,7 +181,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
             </svg>
-            바로 가기
+            바로가기
           </a>
         </div>
         <div class="frame" id="frame-1">
@@ -176,7 +198,7 @@
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
             </svg>
-            바로 가기
+            바로가기
           </a>
         </div>
         <div class="frame" id="frame-2">
@@ -240,6 +262,14 @@
     </section>
   </div>
 
+  <!-- 접속자 카운터 -->
+  <div class="visitor-counter">
+    <span>총 방문자 수: </span>
+    <span class="count" id="visitor-count">0</span>
+    <span>명</span>
+    <br>
+  </div>
+
   <footer>
     만든 놈 - <a href="discord://-/users/1143199445035536404">OrangeBlue</a>
   </footer>
@@ -297,9 +327,8 @@
       startInterval();
     });
 
-    // 초기 로드 시 (모든 이미지 1번 로드)
+    // 페이지 로드 시 실행
     refreshImages(allImgs);
-    // 자동 새로고침 시작 (타일 제외)
     startInterval();
 
     window.addEventListener('beforeunload', () => clearInterval(timer));
