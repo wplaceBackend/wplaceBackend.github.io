@@ -6,7 +6,9 @@ const imgs = [
   document.getElementById('img-1'),
   document.getElementById('img-2'),
   document.getElementById('img-3'),
-  document.getElementById('img-4')
+  document.getElementById('img-4'),
+  document.getElementById('img-5'),
+  document.getElementById('img-6')
 ];
 
 // 페이지 최초 로드용 (타일 포함)
@@ -110,6 +112,8 @@ function applyFocusAll() {
     { el: document.getElementById("img-2"), cx: 220, cy: 196, baseScale: 1.2, minWidth: 361 },
     { el: document.getElementById("img-3"), cx: 607, cy: 622, baseScale: 0.55 },
     { el: document.getElementById("img-4"), cx: 805, cy: 449, baseScale: 0.9 },
+    { el: document.getElementById("img-5"), cx: 619, cy: 862, baseScale: 1.3, minWidth: 300 },
+    { el: document.getElementById("img-6"), cx: 728, cy: 457, baseScale: 1.07 },
   ];
 
   focusTargets.forEach(t =>
