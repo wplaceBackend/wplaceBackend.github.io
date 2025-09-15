@@ -58,8 +58,15 @@ header p {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: 1fr; /* 기본값: 모바일에서 1열 */
   gap: var(--gap)
+}
+
+/* 화면이 768px 이상이면 2열 */
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .card {
