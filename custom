@@ -1,0 +1,1149 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Wplace 맞춤 지점 감시기</title>
+  <style>
+    :root {
+      --frame-bg: #e6e5e5;
+      --gap: 18px;
+      --accent: #0055ff;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f8f9fa;
+      color: #111
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 28px auto;
+      padding: 20px
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px
+    }
+
+    header h1 {
+      font-size: 26px;
+      margin: 0;
+      color: var(--accent)
+    }
+
+    header p {
+      font-size: 15px;
+      color: #444;
+      margin: 6px 0 0
+    }
+
+    .controls {
+      margin: 20px 0;
+      text-align: center
+    }
+
+    .controls label {
+      font-size: 14px;
+      margin-right: 8px
+    }
+
+    .controls input {
+      width: 70px;
+      padding: 4px;
+      font-size: 14px;
+      text-align: center;
+      border: 1px solid #ccc;
+      border-radius: 6px
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap)
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12)
+    }
+
+    .add-card {
+      background: #f5f5f5;
+      border: 2px dashed #ccc;
+      cursor: pointer;
+      justify-content: center;
+      align-items: center;
+      min-height: 200px;
+    }
+
+    .add-card:hover {
+      border-color: var(--accent);
+      background: #f0f8ff;
+    }
+
+    .add-icon {
+      width: 48px;
+      height: 48px;
+      color: #999;
+      margin-bottom: 10px;
+    }
+
+    .add-text {
+      color: #999;
+      font-size: 16px;
+    }
+
+    .card-header {
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 10px;
+      min-height: 40px;
+    }
+
+    .card .meta {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+    }
+
+    .card .meta strong {
+      font-size: 16px;
+      color: #222
+    }
+
+    .card-buttons {
+      position: absolute;
+      top: 0;
+      right: 0;
+      display: flex;
+      gap: 4px;
+      z-index: 10;
+    }
+
+    .delete-btn, .edit-btn {
+      background: #ff4444;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .edit-btn {
+      background: #28a745;
+    }
+
+    .delete-btn:hover {
+      background: #cc0000;
+      transform: translateY(-1px);
+    }
+
+    .edit-btn:hover {
+      background: #1e7e34;
+      transform: translateY(-1px);
+    }
+
+    .goto-btn {
+      background: linear-gradient(135deg, #0055ff, #0099ff);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 85, 255, 0.3);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .goto-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 85, 255, 0.4);
+    }
+
+    .goto-btn svg {
+      width: 10px;
+      height: 10px;
+    }
+
+    .confirm-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      transition: background-color 0.3s ease;
+    }
+
+    .confirm-dialog.show {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .confirm-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      max-width: 400px;
+      margin: 20px;
+      transform: scale(0.8) translateY(-50px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .confirm-dialog.show .confirm-content {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .confirm-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .download-btn {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 20;
+      background: linear-gradient(135deg, #28a745, #20c997);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+      transition: all 0.2s ease;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(40, 167, 69, 0.4);
+    }
+
+    .download-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .frame {
+      width: 100%;
+      height: 420px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: var(--frame-bg)
+    }
+
+    .frame img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: opacity 0.3s ease;
+    }
+
+    .frame img.hidden {
+      opacity: 0
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0);
+      transition: background-color 0.3s ease;
+    }
+
+    .modal.show {
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 2% auto;
+      padding: 30px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transform: scale(0.7) translateY(-100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+
+    .modal.show .modal-content {
+      transform: scale(1) translateY(0);
+      opacity: 1;
+    }
+
+    .modal h3 {
+      margin-top: 0;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .form-group {
+      margin: 15px 0;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .form-row input {
+      flex: 1;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #0044cc;
+    }
+
+    .btn-secondary {
+      background: #ccc;
+      color: #333;
+    }
+
+    .btn-secondary:hover {
+      background: #bbb;
+    }
+
+    .preview-image {
+      max-width: 100%;
+      height: 200px;
+      object-fit: contain;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      margin: 10px 0;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #444;
+      padding-bottom: 60px;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .error {
+      color: #ff4444;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Wplace 맞춤 지점 감시기</h1>
+      <p>감시하고 싶은 지점을 추가하고 새로고침 시간을 설정할 수 있습니다.</p>
+    </header>
+
+    <div class="controls">
+      <label for="interval">새로고침 간격(초):</label>
+      <input type="number" id="interval" value="30" min="1" />
+    </div>
+
+    <main class="grid" id="mainGrid">
+      <div class="card add-card" id="addCard">
+        <svg class="add-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+        </svg>
+        <div class="add-text">감시 지점 추가</div>
+      </div>
+    </main>
+  </div>
+
+  <!-- 모달 -->
+  <div id="addModal" class="modal">
+    <div class="modal-content">
+      <h3>감시 지점 추가</h3>
+      
+      <div class="form-group">
+        <label>작품이 속해 있는 타일 좌표를 입력해주세요.</label>
+        <div class="form-row">
+          <input type="number" id="tileX" placeholder="Tl X" required>
+          <input type="number" id="tileY" placeholder="Tl Y" required>
+        </div>
+        <div class="error" id="tileError"></div>
+      </div>
+
+      <div class="form-group">
+        <button type="button" class="btn btn-primary" id="loadPreview">이미지 미리보기</button>
+      </div>
+
+      <div id="previewSection" style="display: none;">
+        <div class="form-group">
+          <img id="previewImage" class="preview-image" alt="미리보기">
+        </div>
+
+        <div class="form-group">
+          <label>작품의 픽셀 좌표, 확대 비율, 최소 보장 폭(선택)을 입력해주세요.</label>
+          <div class="form-row">
+            <input type="number" id="pixelX" placeholder="Px X" required>
+            <input type="number" id="pixelY" placeholder="Px Y" required>
+          </div>
+          <div class="form-row">
+            <input type="number" id="baseScale" placeholder="확대 비율" step="0.1" required>
+            <input type="number" id="minWidth" placeholder="최소 보장 폭 (선택)" step="1">
+          </div>
+          <div class="error" id="pixelError"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="cardName">지점 이름:</label>
+          <input type="text" id="cardName" placeholder="지점 이름을 입력하세요" required>
+          <div class="error" id="nameError"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="shareLink">장소 바로가기 링크 (선택):</label>
+          <input type="url" id="shareLink" placeholder="https://wplace.live/?lat=...">
+          <div class="error" id="linkError"></div>
+        </div>
+      </div>
+
+      <div class="modal-buttons">
+        <button type="button" class="btn btn-secondary" id="cancelBtn">취소</button>
+        <button type="button" class="btn btn-primary" id="addBtn" style="display: none;">추가</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    만든 놈 - <a href="discord://-/users/1143199445035536404">OrangeBlue</a>
+  </footer>
+
+  <script>
+    let intervalSec = 30;
+    let timer;
+    let cardCounter = 0;
+    let monitorCards = [];
+
+    // 로컬 스토리지에서 데이터 로드
+    function loadFromStorage() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('wplace-monitor-cards') || '[]');
+        const savedInterval = parseInt(localStorage.getItem('wplace-monitor-interval') || '30');
+        
+        intervalSec = savedInterval;
+        document.getElementById('interval').value = intervalSec;
+        
+        saved.forEach(cardData => {
+          createCard(cardData);
+        });
+        
+        if (monitorCards.length > 0) {
+          applyFocusAll();
+        }
+      } catch (e) {
+        console.error('Failed to load from storage:', e);
+      }
+    }
+
+    // 로컬 스토리지에 저장
+    function saveToStorage() {
+      try {
+        const cardsData = monitorCards.map(card => ({
+          id: card.id,
+          name: card.name,
+          tileX: card.tileX,
+          tileY: card.tileY,
+          cx: card.cx,
+          cy: card.cy,
+          baseScale: card.baseScale,
+          minWidth: card.minWidth,
+          shareLink: card.shareLink
+        }));
+        
+        localStorage.setItem('wplace-monitor-cards', JSON.stringify(cardsData));
+        localStorage.setItem('wplace-monitor-interval', intervalSec.toString());
+      } catch (e) {
+        console.error('Failed to save to storage:', e);
+      }
+    }
+
+    function refreshImages(imgElements) {
+      imgElements.forEach(img => {
+        if (!img || !img.dataset.src) return;
+        
+        const base = img.dataset.src;
+        const url = base + (base.includes('?') ? '&' : '?') + 't=' + Date.now();
+
+        const preload = new Image();
+        preload.onload = () => {
+          img.classList.add('hidden');
+          setTimeout(() => {
+            img.src = url;
+            img.classList.remove('hidden');
+          }, 200);
+        };
+        preload.onerror = () => {
+          console.warn('Failed to load image:', url);
+        };
+        preload.src = url;
+      });
+    }
+
+    function refreshAll() {
+      const imgs = monitorCards.map(card => document.getElementById(`img-${card.id}`)).filter(Boolean);
+      refreshImages(imgs);
+    }
+
+    function startInterval() {
+      clearInterval(timer);
+      timer = setInterval(refreshAll, intervalSec * 1000);
+    }
+
+    function focusImage(img, cx, cy, baseScale, minWidth = 0) {
+      if (!img) return;
+      
+      const frame = img.parentElement;
+      const frameW = frame.clientWidth;
+      const frameH = frame.clientHeight;
+
+      // Use fixed dimensions like in ready.html
+      const origW = 1000;
+      const origH = 1000;
+
+      const scaleX1 = frameW / (2 * cx);
+      const scaleX2 = frameW / (2 * (origW - cx));
+      const scaleY1 = frameH / (2 * cy);
+      const scaleY2 = frameH / (2 * (origH - cy));
+
+      const coverScale = Math.max(scaleX1, scaleX2, scaleY1, scaleY2);
+      const baseOrCover = baseScale ?? coverScale;
+
+      let candidateScale = baseOrCover;
+      if (minWidth && minWidth > 0) {
+        const capByROI = frameW / minWidth;
+        candidateScale = Math.min(candidateScale, capByROI);
+      }
+
+      const finalScale = candidateScale;
+      const scaledW = origW * finalScale;
+      const scaledH = origH * finalScale;
+
+      let offsetX = frameW / 2 - cx * finalScale;
+      let offsetY = frameH / 2 - cy * finalScale;
+
+      img.style.width = `${scaledW}px`;
+      img.style.height = `${scaledH}px`;
+      img.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    }
+
+    function applyFocusAll() {
+      monitorCards.forEach(card => {
+        const img = document.getElementById(`img-${card.id}`);
+        if (img) {
+          focusImage(img, card.cx, card.cy, card.baseScale, card.minWidth);
+        }
+      });
+    }
+
+    function createCard(cardData) {
+      cardCounter++;
+      const cardId = cardData.id || cardCounter;
+      
+      const cardElement = document.createElement('article');
+      cardElement.className = 'card';
+      cardElement.id = `card-${cardId}`;
+      
+      const imageUrl = `https://backend.wplace.live/files/s0/tiles/${cardData.tileX}/${cardData.tileY}.png`;
+      
+      let buttonsHtml = '';
+      if (cardData.shareLink) {
+        buttonsHtml += `<a href="${cardData.shareLink}" target="_blank" class="goto-btn">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+          </svg>
+          바로 가기
+        </a>`;
+      }
+      
+      cardElement.innerHTML = `
+        <div class="card-header">
+          <button class="download-btn" onclick="confirmDownload(${cardId})">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+          </button>
+          <div class="meta">
+            <strong>${cardData.name}</strong>
+          </div>
+          <div class="card-buttons">
+            ${buttonsHtml}
+            <button class="edit-btn" onclick="editCard(${cardId})">수정</button>
+            <button class="delete-btn" onclick="confirmDelete(${cardId})">삭제</button>
+          </div>
+        </div>
+        <div class="frame" id="frame-${cardId}">
+          <img id="img-${cardId}" data-src="${imageUrl}" alt="${cardData.name}" />
+        </div>
+      `;
+      
+      const addCard = document.getElementById('addCard');
+      addCard.parentNode.insertBefore(cardElement, addCard);
+      
+      const cardObj = {
+        id: cardId,
+        name: cardData.name,
+        tileX: cardData.tileX,
+        tileY: cardData.tileY,
+        cx: cardData.cx,
+        cy: cardData.cy,
+        baseScale: cardData.baseScale,
+        minWidth: cardData.minWidth,
+        shareLink: cardData.shareLink || null
+      };
+      
+      monitorCards.push(cardObj);
+      
+      // 이미지 로드
+      const img = document.getElementById(`img-${cardId}`);
+      img.onload = () => {
+        focusImage(img, cardObj.cx, cardObj.cy, cardObj.baseScale, cardObj.minWidth);
+      };
+      refreshImages([img]);
+      
+      saveToStorage();
+      return cardObj;
+    }
+
+    function confirmDownload(cardId) {
+      const card = monitorCards.find(c => c.id === cardId);
+      if (!card) return;
+
+      const confirmDialog = document.createElement('div');
+      confirmDialog.className = 'confirm-dialog';
+      confirmDialog.innerHTML = `
+        <div class="confirm-content">
+          <h3>이미지 다운로드</h3>
+          <p>현재 확대된 "${card.name}" 이미지를 그대로 저장합니다.<br>
+          테러 방지용 도안으로 활용할 수 있습니다.<br><br>
+          다운로드하시겠습니까?</p>
+          <div class="confirm-buttons">
+            <button class="btn btn-secondary" onclick="cancelDownload()">취소</button>
+            <button class="btn btn-primary" onclick="executeDownload(${cardId})">네</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(confirmDialog);
+      
+      // 애니메이션 적용
+      setTimeout(() => {
+        confirmDialog.classList.add('show');
+      }, 10);
+    }
+
+    function cancelDownload() {
+      const confirmDialog = document.querySelector('.confirm-dialog');
+      if (confirmDialog) {
+        confirmDialog.classList.remove('show');
+        setTimeout(() => {
+          confirmDialog.remove();
+        }, 300);
+      }
+    }
+
+    function executeDownload(cardId) {
+      const card = monitorCards.find(c => c.id === cardId);
+      const img = document.getElementById(`img-${cardId}`);
+      const frame = document.getElementById(`frame-${cardId}`);
+      
+      if (!card || !img || !frame) return;
+      
+      // Canvas 생성하여 현재 보이는 이미지 영역 캡처
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const frameRect = frame.getBoundingClientRect();
+      canvas.width = frame.clientWidth;
+      canvas.height = frame.clientHeight;
+      
+      // 배경색 설정
+      ctx.fillStyle = '#e6e5e5';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // 이미지 로드 후 그리기
+      const tempImg = new Image();
+      tempImg.crossOrigin = 'anonymous';
+      
+      tempImg.onload = () => {
+        try {
+          // Use fixed dimensions like in the focusImage function
+          const origW = 1000;
+          const origH = 1000;
+
+          const frameW = frame.clientWidth;
+          const frameH = frame.clientHeight;
+          const cx = card.cx;
+          const cy = card.cy;
+          const baseScale = card.baseScale ?? 1;
+          const minWidth = card.minWidth || 0;
+
+          const scaleX1 = frameW / (2 * cx);
+          const scaleX2 = frameW / (2 * (origW - cx));
+          const scaleY1 = frameH / (2 * cy);
+          const scaleY2 = frameH / (2 * (origH - cy));
+
+          const coverScale = Math.max(scaleX1, scaleX2, scaleY1, scaleY2);
+          const baseOrCover = (baseScale == null) ? coverScale : baseScale;
+          let candidateScale = baseOrCover;
+          if (minWidth && minWidth > 0) {
+            const capByROI = frameW / minWidth;
+            candidateScale = Math.min(candidateScale, capByROI);
+          }
+
+          const finalScale = candidateScale;
+          const scaledW = origW * finalScale;
+          const scaledH = origH * finalScale;
+          const offsetX = frameW / 2 - cx * finalScale;
+          const offsetY = frameH / 2 - cy * finalScale;
+
+          // Determine the source rectangle in the original image that maps to the canvas
+          const srcX = Math.max(0, (-offsetX) / finalScale);
+          const srcY = Math.max(0, (-offsetY) / finalScale);
+          const srcW = Math.min(origW - srcX, canvas.width / finalScale);
+          const srcH = Math.min(origH - srcY, canvas.height / finalScale);
+
+          // Draw that portion stretched to the canvas size
+          ctx.drawImage(tempImg, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
+
+          try {
+            const link = document.createElement('a');
+            link.download = `${card.name}_확대이미지.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            cancelDownload();
+          } catch (err) {
+            console.warn('Canvas toDataURL failed (CORS). Falling back to opening original image.', err);
+            const fallbackUrl = tempImg.src || img.dataset.src + '?t=' + Date.now();
+            window.open(fallbackUrl, '_blank');
+            cancelDownload();
+          }
+        } catch (err) {
+          console.error('Download error:', err);
+          alert('이미지 다운로드에 실패했습니다.');
+          cancelDownload();
+        }
+      };
+      
+      tempImg.onerror = () => {
+        window.open(img.dataset.src + '?t=' + Date.now(), '_blank');
+        cancelDownload();
+      };
+      
+      tempImg.src = img.dataset.src + '?t=' + Date.now();
+    }
+      
+    function confirmDelete(cardId) {
+      const card = monitorCards.find(c => c.id === cardId);
+      if (!card) return;
+
+      const confirmDialog = document.createElement('div');
+      confirmDialog.className = 'confirm-dialog';
+      confirmDialog.innerHTML = `
+        <div class="confirm-content">
+          <h3>삭제 확인</h3>
+          <p>"${card.name}" 지점을 정말로 삭제하시겠습니까?</p>
+          <div class="confirm-buttons">
+            <button class="btn btn-secondary" onclick="cancelDelete()">취소</button>
+            <button class="btn btn-primary" onclick="executeDelete(${cardId})">네</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(confirmDialog);
+      
+      setTimeout(() => {
+        confirmDialog.classList.add('show');
+      }, 10);
+    }
+
+    function cancelDelete() {
+      const confirmDialog = document.querySelector('.confirm-dialog');
+      if (confirmDialog) {
+        confirmDialog.classList.remove('show');
+        setTimeout(() => {
+          confirmDialog.remove();
+        }, 300);
+      }
+    }
+
+    function executeDelete(cardId) {
+      deleteCard(cardId);
+      cancelDelete();
+    }
+
+    function deleteCard(cardId) {
+      const cardElement = document.getElementById(`card-${cardId}`);
+      if (cardElement) {
+        cardElement.remove();
+      }
+      
+      monitorCards = monitorCards.filter(card => card.id !== cardId);
+      saveToStorage();
+    }
+
+    function editCard(cardId) {
+      const card = monitorCards.find(c => c.id === cardId);
+      if (!card) return;
+
+      // 모달 열기
+      modal.style.display = 'block';
+      setTimeout(() => {
+        modal.classList.add('show');
+      }, 10);
+      
+      // 기존 데이터 채우기
+      document.getElementById('tileX').value = card.tileX;
+      document.getElementById('tileY').value = card.tileY;
+      document.getElementById('pixelX').value = card.cx;
+      document.getElementById('pixelY').value = card.cy;
+      document.getElementById('baseScale').value = card.baseScale;
+      document.getElementById('minWidth').value = card.minWidth || '';
+      document.getElementById('cardName').value = card.name;
+      document.getElementById('shareLink').value = card.shareLink || '';
+      
+      // 미리보기 이미지 로드
+      const imageUrl = `https://backend.wplace.live/files/s0/tiles/${card.tileX}/${card.tileY}.png`;
+      const previewImg = document.getElementById('previewImage');
+      previewImg.src = imageUrl;
+      document.getElementById('previewSection').style.display = 'block';
+      
+      // 버튼 텍스트 변경
+      document.getElementById('addBtn').textContent = '수정';
+      document.getElementById('addBtn').style.display = 'inline-block';
+      document.getElementById('addBtn').dataset.editId = cardId;
+      
+      // 모달 제목 변경
+      document.querySelector('.modal h3').textContent = '감시 지점 수정';
+      
+      clearErrors();
+    }
+
+    // 모달 관련
+    const modal = document.getElementById('addModal');
+    const addCard = document.getElementById('addCard');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const loadPreviewBtn = document.getElementById('loadPreview');
+    const addBtn = document.getElementById('addBtn');
+
+    addCard.addEventListener('click', () => {
+      modal.style.display = 'block';
+      setTimeout(() => {
+        modal.classList.add('show');
+      }, 10);
+      resetModal();
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+    });
+
+    window.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.classList.remove('show');
+        setTimeout(() => {
+          modal.style.display = 'none';
+        }, 300);
+      }
+    });
+
+    function resetModal() {
+      document.getElementById('tileX').value = '';
+      document.getElementById('tileY').value = '';
+      document.getElementById('pixelX').value = '';
+      document.getElementById('pixelY').value = '';
+      document.getElementById('baseScale').value = '';
+      document.getElementById('minWidth').value = '';
+      document.getElementById('cardName').value = '';
+      document.getElementById('shareLink').value = '';
+      document.getElementById('previewSection').style.display = 'none';
+      document.getElementById('addBtn').style.display = 'none';
+      document.getElementById('addBtn').textContent = '추가';
+      document.getElementById('addBtn').removeAttribute('data-edit-id');
+      document.querySelector('.modal h3').textContent = '감시 지점 추가';
+      clearErrors();
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.error').forEach(el => el.textContent = '');
+    }
+
+    loadPreviewBtn.addEventListener('click', () => {
+      clearErrors();
+      
+      const tileX = document.getElementById('tileX').value.trim();
+      const tileY = document.getElementById('tileY').value.trim();
+      
+      if (!tileX || !tileY) {
+        document.getElementById('tileError').textContent = 'Tl X와 Tl Y는 필수 입력 항목입니다.';
+        return;
+      }
+      
+      const imageUrl = `https://backend.wplace.live/files/s0/tiles/${tileX}/${tileY}.png`;
+      const previewImg = document.getElementById('previewImage');
+      
+      previewImg.src = imageUrl;
+      previewImg.onload = () => {
+        document.getElementById('previewSection').style.display = 'block';
+        document.getElementById('addBtn').style.display = 'inline-block';
+      };
+      
+      previewImg.onerror = () => {
+        document.getElementById('tileError').textContent = '이미지를 로드할 수 없습니다. 좌표를 확인해주세요.';
+      };
+    });
+
+    addBtn.addEventListener('click', () => {
+      clearErrors();
+      
+      const tileX = document.getElementById('tileX').value.trim();
+      const tileY = document.getElementById('tileY').value.trim();
+      const pixelX = document.getElementById('pixelX').value.trim();
+      const pixelY = document.getElementById('pixelY').value.trim();
+      const baseScale = document.getElementById('baseScale').value.trim();
+      const minWidth = document.getElementById('minWidth').value.trim();
+      const cardName = document.getElementById('cardName').value.trim();
+      const shareLink = document.getElementById('shareLink').value.trim();
+      const editId = addBtn.dataset.editId;
+      
+      let hasError = false;
+      
+      if (!tileX || !tileY) {
+        document.getElementById('tileError').textContent = 'Tl X와 Tl Y는 필수 입력 항목입니다.';
+        hasError = true;
+      }
+      
+      if (!pixelX || !pixelY || !baseScale) {
+        document.getElementById('pixelError').textContent = 'Px X, Px Y, 확대 비율은 필수 입력 항목입니다.';
+        hasError = true;
+      }
+      
+      if (!cardName) {
+        document.getElementById('nameError').textContent = '지점 이름은 필수 입력 항목입니다.';
+        hasError = true;
+      }
+      
+      // 링크 유효성 검증
+      if (shareLink && !shareLink.startsWith('https://wplace.live')) {
+        document.getElementById('linkError').textContent = '올바른 링크가 아닙니다. https://wplace.live 로 시작하는 링크를 입력해주세요.';
+        hasError = true;
+      }
+      
+      if (hasError) return;
+      
+      const cardData = {
+        name: cardName,
+        tileX: parseInt(tileX),
+        tileY: parseInt(tileY),
+        cx: parseInt(pixelX),
+        cy: parseInt(pixelY),
+        baseScale: parseFloat(baseScale),
+        minWidth: minWidth ? parseInt(minWidth) : 0,
+        shareLink: shareLink || null
+      };
+      
+      if (editId) {
+        // 수정 모드: 기존 카드 데이터를 업데이트하고 DOM을 수정
+        const cardId = parseInt(editId);
+        const existingIndex = monitorCards.findIndex(c => c.id === cardId);
+        if (existingIndex !== -1) {
+          // update data model
+          monitorCards[existingIndex] = {
+            id: cardId,
+            name: cardData.name,
+            tileX: cardData.tileX,
+            tileY: cardData.tileY,
+            cx: cardData.cx,
+            cy: cardData.cy,
+            baseScale: cardData.baseScale,
+            minWidth: cardData.minWidth,
+            shareLink: cardData.shareLink || null
+          };
+
+          // update DOM elements without changing position
+          const img = document.getElementById(`img-${cardId}`);
+          const frame = document.getElementById(`frame-${cardId}`);
+          const cardEl = document.getElementById(`card-${cardId}`);
+          if (img) {
+            const imageUrl = `https://backend.wplace.live/files/s0/tiles/${cardData.tileX}/${cardData.tileY}.png`;
+            img.dataset.src = imageUrl;
+            img.src = imageUrl + '?t=' + Date.now();
+            img.onload = () => {
+              focusImage(img, cardData.cx, cardData.cy, cardData.baseScale, cardData.minWidth);
+            };
+          }
+
+          if (cardEl) {
+            // update title
+            const titleEl = cardEl.querySelector('.meta strong');
+            if (titleEl) titleEl.textContent = cardData.name;
+            // update goto link if present
+            const gotoContainer = cardEl.querySelector('.card-buttons');
+            const existingGoto = gotoContainer.querySelector('.goto-btn');
+            if (existingGoto) existingGoto.remove();
+            
+            if (cardData.shareLink) {
+              const gotoBtn = document.createElement('a');
+              gotoBtn.href = cardData.shareLink;
+              gotoBtn.target = '_blank';
+              gotoBtn.className = 'goto-btn';
+              gotoBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
+              </svg>바로 가기`;
+              gotoContainer.insertBefore(gotoBtn, gotoContainer.firstChild);
+            }
+          }
+
+          saveToStorage();
+        }
+      } else {
+        // 추가 모드
+        createCard(cardData);
+      }
+      
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+      }, 300);
+      
+      // 포커스 적용
+      setTimeout(() => {
+        applyFocusAll();
+      }, 100);
+    });
+
+    // 새로고침 간격 변경
+    document.getElementById('interval').addEventListener('change', e => {
+      intervalSec = parseInt(e.target.value, 10) || 5;
+      startInterval();
+      saveToStorage();
+    });
+
+    // 창 크기 변경 시 포커스 재적용
+    window.addEventListener('resize', applyFocusAll);
+
+    // 페이지 언로드 시 타이머 정리
+    window.addEventListener('beforeunload', () => {
+      clearInterval(timer);
+    });
+
+    // 초기 로드
+    loadFromStorage();
+    startInterval();
+  </script>
+</body>
+
+</html>
