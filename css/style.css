@@ -2,6 +2,23 @@
   --frame-bg: #e6e5e5;
   --gap: 18px;
   --accent: #0055ff;
+
+  /* 라이트 모드 색상 */
+  --bg-color: #f8f9fa;
+  --text-color: #111;
+  --card-bg: #fff;
+  --border-color: #ccc;
+  --input-bg: #fff;
+}
+
+/* 다크 모드 색상 */
+[data-theme="dark"] {
+  --bg-color: #1a1a1a;
+  --text-color: #e0e0e0;
+  --card-bg: #2d2d2d;
+  --border-color: #444;
+  --input-bg: #333;
+  --frame-bg: #636363;
 }
 
 html,
@@ -10,8 +27,9 @@ body {
   height: 100%;
   margin: 0;
   font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: #f8f9fa;
-  color: #111
+  background: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .wrap {
@@ -52,8 +70,21 @@ header p {
   padding: 4px;
   font-size: 14px;
   text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 6px
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.controls input:focus {
+  border-color: #000;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .controls input:focus {
+  border-color: #fff;
+  box-shadow: none;
 }
 
 .grid {
@@ -70,7 +101,7 @@ header p {
 }
 
 .card {
-  background: #fff;
+  background: var(--card-bg);
   border-radius: 12px;
   padding: 14px;
   display: flex;
@@ -104,7 +135,7 @@ header p {
 
 .card .meta strong {
   font-size: 16px;
-  color: #222
+  color: var(--text-color);
 }
 
 .goto-btn {
@@ -135,6 +166,38 @@ header p {
 .goto-btn svg {
   width: 12px;
   height: 12px;
+}
+
+/* 다크모드 토글 옆의 바로가기 링크 버튼 */
+.quick-link-btn {
+  position: absolute;
+  top: 28px;
+  right: 90px; /* 다크모드 버튼보다 왼쪽으로 배치 */
+  background: linear-gradient(135deg, #0055ff, #0099ff);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 85, 255, 0.3);
+  transition: all 0.2s ease;
+  z-index: 99;
+}
+
+.quick-link-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 85, 255, 0.4);
+}
+
+.quick-link-btn svg {
+  width: 18px;
+  height: 18px;
 }
 
 .frame {
@@ -213,4 +276,45 @@ footer a {
   color: var(--accent);
   text-decoration: none;
   font-weight: bold;
+}
+
+.dark-mode-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode-toggle svg {
+  width: 24px;
+  height: 24px;
+  color: var(--text-color);
+  transition: transform 0.3s ease;
+}
+
+.dark-mode-toggle.rotating svg {
+  transform: rotate(180deg);
+}
+
+/* 다크모드에서 설명글/공지/푸터 텍스트 색상 개선 */
+[data-theme="dark"] header p,
+[data-theme="dark"] .featured p.notice,
+[data-theme="dark"] footer {
+  color: #f0f0f0 !important;
 }
