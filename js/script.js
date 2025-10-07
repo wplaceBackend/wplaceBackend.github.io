@@ -47,8 +47,19 @@ function startInterval() {
   timer = setInterval(refreshAll, intervalSec * 1000);
 }
 
-document.getElementById('interval').addEventListener('change', e => {
+const intervalInput = document.getElementById('interval');
+
+// 저장된 새로고침 시간 불러오기
+const savedInterval = localStorage.getItem('refreshInterval');
+if (savedInterval) {
+  intervalSec = parseInt(savedInterval, 10);
+  intervalInput.value = intervalSec;
+}
+
+// 변경 시 저장 및 즉시 적용
+intervalInput.addEventListener('change', e => {
   intervalSec = parseInt(e.target.value, 10) || 5;
+  localStorage.setItem('refreshInterval', intervalSec);
   startInterval();
 });
 
@@ -122,9 +133,49 @@ function applyFocusAll() {
 }
 
 // 페이지 로드 시 실행
+initDarkMode();
 refreshImages(allImgs);
 startInterval();
 applyFocusAll();
+
+// === 다크모드 관련 (custom.html과 동일 구현) ===
+function initDarkMode() {
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const sunIcon = document.getElementById('sunIcon');
+  const moonIcon = document.getElementById('moonIcon');
+  if (!darkModeToggle) return;
+
+  // 저장된 테마 불러오기
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateIcons(savedTheme);
+
+  darkModeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // 회전 애니메이션 추가
+    darkModeToggle.classList.add('rotating');
+    setTimeout(() => {
+      darkModeToggle.classList.remove('rotating');
+    }, 300);
+
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateIcons(newTheme);
+  });
+
+  function updateIcons(theme) {
+    if (theme === 'dark') {
+      sunIcon.style.display = 'none';
+      moonIcon.style.display = 'block';
+    } else {
+      sunIcon.style.display = 'block';
+      moonIcon.style.display = 'none';
+    }
+  }
+}
+
 
 window.addEventListener('beforeunload', () => clearInterval(timer));
 window.addEventListener("resize", applyFocusAll); // 창 크기 변경 시마다 위치 재설정
