@@ -777,8 +777,10 @@
     }
 
     function createCard(cardData) {
-      cardCounter++;
-      const cardId = cardData.id || cardCounter;
+      const maxId = monitorCards.length > 0
+      ? Math.max(...monitorCards.map(c => c.id))
+      : 0;
+    const cardId = (cardData.id !== undefined) ? cardData.id : maxId + 1;
       
       const cardElement = document.createElement('article');
       cardElement.className = 'card';
