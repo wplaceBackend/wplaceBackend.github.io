@@ -4,16 +4,17 @@ let timer;
 // 자동 새로고침 대상 (타일 제외)
 const imgs = [
   document.getElementById('img-1'),
-  document.getElementById('img-2'),
-  document.getElementById('img-3'),
-  document.getElementById('img-4'),
-  document.getElementById('img-5'),
-  document.getElementById('img-6')
+  document.getElementById('img-2')
 ];
 
 // 페이지 최초 로드용 (타일 포함)
 const allImgs = [
-  ...imgs,
+  document.getElementById('img-1'),
+  document.getElementById('img-2'),
+  document.getElementById('img-3'),  
+  document.getElementById('img-4'),  
+  document.getElementById('img-5'),
+  document.getElementById('img-6'),  
   ...Array.from({ length: 9 }, (_, i) => document.getElementById(`tile-${i + 1}`))
 ];
 
