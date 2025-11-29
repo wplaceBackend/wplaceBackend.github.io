@@ -58,6 +58,119 @@
   z-index: 100;
 }
 
+/* 서버 상태 표시등 스타일 (추가할 코드) */
+.server-status {
+  position: absolute;
+  top: 25px;
+  left: 80px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: default;
+  z-index: 100;
+}
+
+.status-light {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #888; /* 기본 회색 */
+  transition: background-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+/* 상태별 색상 정의 */
+.server-status.ok .status-light {
+  background-color: #28a745; /* 초록 */
+  box-shadow: 0 0 8px rgba(40, 167, 69, 0.7);
+}
+
+.server-status.error .status-light {
+  background-color: #ff4444; /* 빨강 */
+  box-shadow: 0 0 8px rgba(255, 68, 68, 0.7);
+}
+
+.server-status.unknown .status-light {
+  background-color: #ffbb33; /* 주황 */
+  box-shadow: 0 0 8px rgba(255, 187, 51, 0.7);
+}
+
+
+/* 상태 표시등 애니메이션을 위한 부모 요소 */
+.status-light-wrapper {
+  position: relative;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 퍼져나가는 애니메이션 효과 */
+@keyframes pulse-animation {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+.status-light-wrapper .pulse {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: currentColor; /* 부모의 색상을 상속받음 */
+  animation: pulse-animation 1s ease-out;
+  animation-fill-mode: forwards; /* 애니메이션 종료 상태 유지 */
+}
+
+/* 커스텀 툴팁(말풍선) 스타일 */
+.custom-tooltip {
+  position: absolute;
+  bottom: -120%; /* 상태 표시등 위쪽에 위치 */
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #333;
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+  z-index: 110;
+}
+
+/* 말풍선 꼬리 */
+.custom-tooltip::after {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent #333 transparent;
+}
+
+/* 호버 시 툴팁 보이기 */
+.server-status:hover .custom-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
   .info-btn:hover {
   transform: scale(1.1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
@@ -663,8 +776,7 @@
 
     .error {
       color: #ff4444;
-      font-size: 12px;
-      margin-top: 5px;
+      font-size: 14px;
     }
   </style>
 </head>
@@ -674,6 +786,14 @@
 <button id="infoBtn" class="info-btn" title="사이트 이용 안내">
   <i class="fa-solid fa-circle-info"></i>
 </button>
+
+<div id="serverStatus" class="server-status">
+  <div class="status-light-wrapper">
+    <div class="status-light"></div>
+  </div>
+  <span class="status-text">확인 중...</span>
+  <div id="customTooltip" class="custom-tooltip">서버 상태 확인 중...</div>
+</div>
 
 <!-- 정보 모달 -->
 <div id="infoModal" class="info-modal">
@@ -813,11 +933,116 @@
   </footer>
 
   <script>
+    const serverStatusElement = document.getElementById('serverStatus');
+    const statusLight = serverStatusElement.querySelector('.status-light');
+    const statusText = serverStatusElement.querySelector('.status-text');
+    const customTooltip = document.getElementById('customTooltip');
+    const statusLightWrapper = serverStatusElement.querySelector('.status-light-wrapper');
+
+    /**
+ * HTTP 상태 코드를 시뮬레이션하여 UI를 업데이트하는 테스트 함수.
+ * @param {number} statusCode - 테스트할 HTTP 상태 코드 (예: 404, 500, 503)
+ */
+
+ // 테스트용 함수: 특정 HTTP 상태 코드를 시뮬레이션, 배포 전 지우기 안지우면 병신
+
+function testHttpStatus(statusCode) {
+  console.log(`테스트: HTTP ${statusCode} 상태를 시뮬레이션합니다.`);
+  
+  if (statusCode >= 200 && statusCode < 300) {
+    updateStatus('ok', '서버 원활', `정상 응답 (테스트: ${statusCode})`);
+  } else {
+    updateStatus('error', '접속 불가', `서버 오류 (테스트: ${statusCode})`);
+  }
+}
+
+
     let intervalSec = 30;
     let timer;
     let cardCounter = 0;
     let monitorCards = [];
     let refreshTimer = null;
+
+async function checkServerStatus() {
+  playPulseAnimation(); // 애니메이션 실행 코드 추가
+  
+  // AbortController를 사용해 5초 타임아웃 설정
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000); // 5초
+
+  try {
+    // wplace.live의 favicon.ico는 용량이 작고 캐시 정책이 짧아 확인용으로 적합합니다.
+    // Date.now()를 쿼리로 추가하여 캐시를 무시하고 항상 새로 요청합니다.
+    const response = await fetch('https://wplace-cors-proxy.snackcandy105.workers.dev/?url=https://backend.wplace.live/files/s0/tiles/1774/795.png?t=' + Date.now( ), {
+      method: 'HEAD', // HEAD 메소드로 요청하면 본문 없이 헤더만 받아와 빠릅니다.
+      signal: controller.signal,
+      cache: 'no-store' // 캐시 사용 안함
+    });
+
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      // 요청 성공 (200-299 상태 코드)
+      updateStatus('ok', '서버 원활' , `정상 응답 (코드: ${response.status})`);
+    } else {
+      // 서버는 응답했으나, 정상적인 상태 코드가 아님
+      updateStatus('error', '접속 불가', `서버 오류 (코드: ${response.status})`);
+    }
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === 'AbortError') {
+      // 요청 시간 초과
+      updateStatus('error', '접속 불가', '응답 시간 초과');
+    } else {
+      // 네트워크 오류 등 기타 문제
+      updateStatus('unknown', '확인 불가', '네트워크 오류');
+    }
+  }
+}
+
+function updateStatus(status, mainText, tooltipText) {
+  const isChanging = !serverStatusElement.classList.contains(status);
+
+  serverStatusElement.className = 'server-status ' + status;
+  statusText.textContent = mainText;
+  customTooltip.textContent = `백엔드 서버 상태: ${tooltipText}`; // 커스텀 툴팁 내용 업데이트
+
+  // 상태가 변경될 때는 애니메이션을 건너뛰고,
+  // 상태가 유지될 때만 애니메이션을 재생합니다.
+  if (!isChanging) {
+    playPulseAnimation();
+  }
+}
+
+function playPulseAnimation() {
+  // 기존 애니메이션 요소 제거
+  const existingPulses = statusLightWrapper.querySelectorAll('.pulse');
+  existingPulses.forEach(p => p.remove());
+
+  // 현재 상태 표시등의 색상 가져오기
+  const currentColor = window.getComputedStyle(statusLight).backgroundColor;
+
+  // 2번의 펄스 효과 생성
+  for (let i = 0; i < 2; i++) {
+    setTimeout(() => {
+      const pulse = document.createElement('div');
+      pulse.className = 'pulse';
+      pulse.style.color = currentColor; // 애니메이션 색상 설정
+      statusLightWrapper.appendChild(pulse);
+      
+      // 애니메이션이 끝나면 DOM에서 제거
+      pulse.addEventListener('animationend', () => {
+        pulse.remove();
+      });
+    }, i * 300); // 0.3초 간격으로 실행
+  }
+}
+
+// 1분에 한 번씩 서버 상태 확인
+setInterval(checkServerStatus, 60000); 
+// 페이지 로드 시 즉시 한 번 실행
+checkServerStatus();
+
 
     // 로컬 스토리지에서 데이터 로드
     function loadFromStorage() {
