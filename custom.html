@@ -939,24 +939,6 @@
     const customTooltip = document.getElementById('customTooltip');
     const statusLightWrapper = serverStatusElement.querySelector('.status-light-wrapper');
 
-    /**
- * HTTP 상태 코드를 시뮬레이션하여 UI를 업데이트하는 테스트 함수.
- * @param {number} statusCode - 테스트할 HTTP 상태 코드 (예: 404, 500, 503)
- */
-
- // 테스트용 함수: 특정 HTTP 상태 코드를 시뮬레이션, 배포 전 지우기 안지우면 병신
-
-function testHttpStatus(statusCode) {
-  console.log(`테스트: HTTP ${statusCode} 상태를 시뮬레이션합니다.`);
-  
-  if (statusCode >= 200 && statusCode < 300) {
-    updateStatus('ok', '서버 원활', `정상 응답 (테스트: ${statusCode})`);
-  } else {
-    updateStatus('error', '접속 불가', `서버 오류 (테스트: ${statusCode})`);
-  }
-}
-
-
     let intervalSec = 30;
     let timer;
     let cardCounter = 0;
