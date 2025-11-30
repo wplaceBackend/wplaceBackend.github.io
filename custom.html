@@ -939,6 +939,8 @@
     const customTooltip = document.getElementById('customTooltip');
     const statusLightWrapper = serverStatusElement.querySelector('.status-light-wrapper');
 
+    const PROXY_URL_BASE = 'https://wplace-cors-proxy.snackcandy105.workers.dev/?url=';
+
     let intervalSec = 30;
     let timer;
     let cardCounter = 0;
@@ -1225,10 +1227,8 @@ checkServerStatus();
       confirmDialog.innerHTML = `
         <div class="confirm-content">
           <h3>이미지 다운로드</h3>
-          <p>새 탭에서 "${card.name}" 타일의 원본 이미지가 열립니다.<br>
-이미지를 우클릭 → "다른 이름으로 저장"을 눌러 저장 후,<br>
-외부 프로그램으로 잘라 테러 방지 도안을 제작할 수 있습니다.<br><br>
-새 탭에서 계속 진행하시겠습니까?</p>
+          <p>화면에 보이는 "${card.name}" 이미지가 다운로드 됩니다.<br>
+CORS 오류 발생시 새 탭에서 원본 이미지가 열립니다.<br> 이 경우 개발자에게 문의 바랍니다.</p>
           <div class="confirm-buttons">
             <button class="btn btn-secondary" onclick="cancelDownload()">취소</button>
             <button class="btn btn-primary" onclick="executeDownload(${cardId})">네</button>
@@ -1262,12 +1262,13 @@ checkServerStatus();
       if (!card || !img || !frame) return;
       
       // Canvas 생성하여 현재 보이는 이미지 영역 캡처
+      const DPR = 2; // 고해상도 출력을 위해 DPR 설정
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       
       const frameRect = frame.getBoundingClientRect();
-      canvas.width = frame.clientWidth;
-      canvas.height = frame.clientHeight;
+      canvas.width = frame.clientWidth * DPR;
+      canvas.height = frame.clientHeight * DPR;
       
       // 배경색 설정
       ctx.fillStyle = 'transparent';
@@ -1308,6 +1309,7 @@ checkServerStatus();
           const scaledH = origH * finalScale;
           const offsetX = frameW / 2 - cx * finalScale;
           const offsetY = frameH / 2 - cy * finalScale;
+         
 
           // Determine the source rectangle in the original image that maps to the canvas
           const srcX = Math.max(0, (-offsetX) / finalScale);
@@ -1315,19 +1317,24 @@ checkServerStatus();
           const srcW = Math.min(origW - srcX, canvas.width / finalScale);
           const srcH = Math.min(origH - srcY, canvas.height / finalScale);
 
-          // Draw that portion stretched to the canvas size
-          ctx.drawImage(tempImg, srcX, srcY, srcW, srcH, 0, 0, canvas.width, canvas.height);
-
+          // 고해상도 출력을 위해 스케일 적용
+          ctx.scale(DPR, DPR);
+          ctx.drawImage(
+            tempImg,
+            0, 0, origW, origH,  // 원본 이미지 전체
+            offsetX, offsetY, scaledW, scaledH  // 캔버스에 그릴 위치와 크기
+          );
+          
           try {
             const link = document.createElement('a');
-            link.download = `${card.name}_확대이미지.png`;
+            link.download = `${card.name}_wplace.png`;
             link.href = canvas.toDataURL();
             link.click();
             cancelDownload();
           } catch (err) {
             console.warn('Canvas toDataURL failed (CORS). Falling back to opening original image.', err);
-            const fallbackUrl = tempImg.src || img.dataset.src + '?t=' + Date.now();
-            window.open(fallbackUrl, '_blank');
+            const originalUrl = img.dataset.src + '?t=' + Date.now();
+            window.open(originalUrl, '_blank');
             cancelDownload();
           }
         } catch (err) {
@@ -1342,7 +1349,9 @@ checkServerStatus();
         cancelDownload();
       };
       
-      tempImg.src = img.dataset.src + '?t=' + Date.now();
+      const originalUrl = img.dataset.src + '?t=' + Date.now();
+      const proxiedUrl = PROXY_URL_BASE + encodeURIComponent(originalUrl);
+      tempImg.src = proxiedUrl;
     }
       
     function confirmDelete(cardId) {
