@@ -98,6 +98,13 @@ header p {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
+
+
+#card-백두산 {
+    grid-column: 1 / -1; /* 첫 번째 열부터 마지막 열까지 */
+    width: 50%; /* 너무 넓어지지 않도록 최대 너비 제한 */
+    margin: 0 auto; /* 중앙 정렬 */
+  }
 }
 
 .card {
