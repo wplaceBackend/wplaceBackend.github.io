@@ -1,205 +1,928 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
-
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Wplace 실시간 국내 주요 지점 감시기</title>
-  <link rel="apple-touch-icon" sizes="180x180" href="images/apple-touch-icon.png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wcam 봇 실시간 대시보드</title>
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
-  <link rel="manifest" href="images/site.webmanifest">
-  <link rel="stylesheet" href="css/style.css">
-</head>
+  <style>
+    :root {
+      --frame-bg: #e6e5e5;
+      --gap: 18px;
+      --accent: #0055ff;
+      --bg-color: #f8f9fa;
+      --text-color: #111;
+      --card-bg: #fff;
+      --border-color: #ccc;
+      --input-bg: #fff;
+      --success: #00ff00;
+      --warning: #ffa500;
+      --danger: #ff0000;
+    }
 
+    [data-theme="dark"] {
+      --bg-color: #1a1a1a;
+      --text-color: #e0e0e0;
+      --card-bg: #2d2d2d;
+      --border-color: #444;
+      --input-bg: #333;
+      --frame-bg: #636363;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .wrap {
+      max-width: 1400px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    header h1 {
+      font-size: 26px;
+      margin: 0;
+      color: var(--accent);
+    }
+
+    .bot-status {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      top: -4px;
+      gap: 6px;
+      font-size: 14px;
+      padding: 6px 12px;
+      background: var(--card-bg);
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+    }
+
+    .status-indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .status-indicator.offline {
+      background: var(--danger);
+      animation: none;
+    }
+
+    header p {
+      font-size: 15px;
+      color: #666;
+      margin: 10px 0 0;
+    }
+
+    [data-theme="dark"] header p {
+      color: #f0f0f0;
+    }
+
+.dark-mode-toggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  left: unset;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  z-index: 100;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dark-mode-toggle svg {
+  width: 24px;
+  height: 24px;
+  color: var(--text-color);
+  transition: transform 0.3s ease;
+}
+
+.dark-mode-toggle.rotating svg {
+  transform: rotate(180deg);
+}
+
+/* 다크모드 토글 옆의 바로가기 링크 버튼 */
+.quick-link-btn {
+  position: absolute;
+  top: 28px;
+  right: 90px; /* 다크모드 버튼보다 왼쪽으로 배치 */
+  background: linear-gradient(135deg, #0055ff, #0099ff);
+  color: white;
+  border: none;
+  border-radius: 15px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  text-decoration: none;
+  box-shadow: 0 2px 6px rgba(0, 85, 255, 0.3);
+  transition: all 0.2s ease;
+  z-index: 99;
+}
+
+.quick-link-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 85, 255, 0.4);
+}
+
+.quick-link-btn svg {
+  width: 18px;
+  height: 18px;
+}
+
+    .stats-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      text-align: center;
+      min-width: 0;
+    }
+
+    .stat-card h3 {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+
+    [data-theme="dark"] .stat-card h3 {
+      color: #f0f0f0;
+    }
+
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--gap);
+      margin-bottom: 30px;
+    }
+
+    @media (min-width: 768px) {
+      .grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+
+    @media (min-width: 1200px) {
+      .grid {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      min-width: 0;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-header strong {
+      font-size: 18px;
+      color: var(--text-color);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+      flex-shrink: 1;
+    }
+
+    .goto-btn {
+      background: linear-gradient(135deg, #0055ff, #0099ff);
+      color: white;
+      border: none;
+      border-radius: 15px;
+      padding: 6px 12px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 85, 255, 0.3);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .goto-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 8px rgba(0, 85, 255, 0.4);
+    }
+
+    .goto-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .frame {
+      width: 100%;
+      height: 300px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      background: var(--frame-bg);
+      margin-bottom: 12px;
+    }
+
+    .frame img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: opacity 0.3s ease;
+    }
+
+    .match-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: rgba(0, 85, 255, 0.1);
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+
+    .match-percentage {
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    .match-percentage.good {
+      color: var(--success);
+    }
+
+    .match-percentage.warning {
+      color: var(--warning);
+    }
+
+    .match-percentage.danger {
+      color: var(--danger);
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 200px;
+      position: relative;
+      min-width: 0;
+    }
+
+    .last-updated {
+      font-size: 12px;
+      color: #666;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    [data-theme="dark"] .last-updated {
+      color: #f0f0f0;
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      font-size: 14px;
+      color: #444;
+      padding-bottom: 40px;
+    }
+
+    [data-theme="dark"] footer {
+      color: #f0f0f0;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+
+    .error-message {
+      background: rgba(255, 0, 0, 0.1);
+      border: 1px solid var(--danger);
+      color: var(--danger);
+      padding: 12px;
+      border-radius: 8px;
+      margin: 10px 0;
+      font-size: 14px;
+    }
+
+        /* 경고 상태 카드 스타일 */
+    .card.warning {
+      border: 3px solid var(--warning);
+    }
+
+    .card.danger {
+      border: 3px solid var(--danger);
+      animation: blink 1s step-start infinite;
+    }
+
+    @keyframes blink {
+      50% {
+        border-color: transparent;
+      }
+    }
+
+    .pixel-info {
+      padding: 8px 12px;
+      background: rgba(0, 85, 255, 0.08);
+      border-radius: 6px;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      border: 1px solid rgba(0, 85, 255, 0.15);
+    }
+
+    [data-theme="dark"] .pixel-info {
+      background: rgba(0, 85, 255, 0.15);
+      color: #e8e8e8;
+      border: 1px solid rgba(0, 85, 255, 0.25);
+    }
+  </style>
+</head>
 <body>
   <div class="wrap">
-   <!-- 바로가기 스타일의 새 버튼 -->
-<a href="https://wplacebackend.github.io/custom.html" target="_blank" class="quick-link-btn" title="맞춤 지점 감시기 열기">
+    <a href="https://wplacebackend.github.io/custom.html" target="_blank" class="quick-link-btn" title="맞춤 지점 감시기 열기">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" fill="currentColor"><!--!Font Awesome Free v7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M415.9 344L225 344C227.9 408.5 242.2 467.9 262.5 511.4C273.9 535.9 286.2 553.2 297.6 563.8C308.8 574.3 316.5 576 320.5 576C324.5 576 332.2 574.3 343.4 563.8C354.8 553.2 367.1 535.8 378.5 511.4C398.8 467.9 413.1 408.5 416 344zM224.9 296L415.8 296C413 231.5 398.7 172.1 378.4 128.6C367 104.2 354.7 86.8 343.3 76.2C332.1 65.7 324.4 64 320.4 64C316.4 64 308.7 65.7 297.5 76.2C286.1 86.8 273.8 104.2 262.4 128.6C242.1 172.1 227.8 231.5 224.9 296zM176.9 296C180.4 210.4 202.5 130.9 234.8 78.7C142.7 111.3 74.9 195.2 65.5 296L176.9 296zM65.5 344C74.9 444.8 142.7 528.7 234.8 561.3C202.5 509.1 180.4 429.6 176.9 344L65.5 344zM463.9 344C460.4 429.6 438.3 509.1 406 561.3C498.1 528.6 565.9 444.8 575.3 344L463.9 344zM575.3 296C565.9 195.2 498.1 111.3 406 78.7C438.3 130.9 460.4 210.4 463.9 296L575.3 296z"/></svg>
   </svg>
   내 그림 감시하러 가기
 </a>
-
-    <!-- 다크모드 토글 (custom.html과 동일) -->
-     <button class="dark-mode-toggle" id="darkModeToggle" title="다크모드 전환">
-       <svg id="sunIcon" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.591a.75.75 0 101.06 1.06l1.591-1.591zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.591-1.591a.75.75 0 10-1.06 1.06l1.591 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.591a.75.75 0 001.06 1.06l1.591-1.591zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06L6.166 5.106a.75.75 0 00-1.06 1.06l1.591 1.591z"/>
-    </svg>
-    <svg id="moonIcon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
-      <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"/>
-    </svg>
-  </button>
     <header>
-      <h1>Wplace 실시간 국내 주요 지점 감시기</h1>
-      <p>각 사진은 설정한 시간마다 자동으로 새로고침 됩니다. (기본값 30초)</p>
+      <button class="dark-mode-toggle" id="darkModeToggle" title="다크/화이트모드 전환">
+        <svg id="sunIcon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.25a.75.75 0 01.75.75v2.25a.75.75 0 01-1.5 0V3a.75.75 0 01.75-.75zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.166a.75.75 0 00-1.06-1.06l-1.591 1.591a.75.75 0 101.06 1.06l1.591-1.591zM21.75 12a.75.75 0 01-.75.75h-2.25a.75.75 0 010-1.5H21a.75.75 0 01.75.75zM17.834 18.894a.75.75 0 001.06-1.06l-1.591-1.591a.75.75 0 10-1.06 1.06l1.591 1.591zM12 18a.75.75 0 01.75.75V21a.75.75 0 01-1.5 0v-2.25A.75.75 0 0112 18zM7.758 17.303a.75.75 0 00-1.061-1.06l-1.591 1.591a.75.75 0 001.06 1.06l1.591-1.591zM6 12a.75.75 0 01-.75.75H3a.75.75 0 010-1.5h2.25A.75.75 0 016 12zM6.697 7.757a.75.75 0 001.06-1.06L6.166 5.106a.75.75 0 00-1.06 1.06l1.591 1.591z"/>
+        </svg>
+        <svg id="moonIcon" viewBox="0 0 24 24" fill="currentColor" style="display: none;">
+          <path d="M9.528 1.718a.75.75 0 01.162.819A8.97 8.97 0 009 6a9 9 0 009 9 8.97 8.97 0 003.463-.69.75.75 0 01.981.98 10.503 10.503 0 01-9.694 6.46c-5.799 0-10.5-4.701-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 01.818.162z"/>
+        </svg>
+      </button>
+      
+      <h1>
+        Wcam 봇 실시간 대시보드
+        <span class="bot-status">
+          <span class="status-indicator" id="botStatusIndicator"></span>
+          <span id="botStatusText">연결 중...</span>
+        </span>
+      </h1>
+      <p>봇이 30초마다 자동으로 태극기를 감시하고 있습니다.</p>
     </header>
 
-    <div class="controls">
-      <label for="interval">새로고침 간격(초):</label>
-      <input type="number" id="interval" value="30" min="1" />
+    <div class="stats-overview">
+      <div class="stat-card">
+        <h3>총 감시 구역</h3>
+        <div class="value" id="totalZones">3</div>
+      </div>
+      <div class="stat-card">
+        <h3>활성 서버</h3>
+        <div class="value" id="activeServers">-</div>
+      </div>
+      <div class="stat-card">
+        <h3>평균 일치율</h3>
+        <div class="value" id="avgMatch">-</div>
+      </div>
+      <div class="stat-card">
+        <h3>마지막 갱신</h3>
+        <div class="value" id="lastUpdate">-</div>
+      </div>
     </div>
 
-    <!-- 주요 지점 -->
-    <main class="grid">
-      <article class="card" id="card-1">
-        <div class="card-header">
-          <div class="meta">
-            <strong>서울 태극기</strong>
-          </div>
-          <a href="https://wplace.live/?lat=37.475207106049986&lng=127.00274380927735&zoom=12.997432909015853"
-            target="_blank" class="goto-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-            </svg>
-            바로 가기
-          </a>
-        </div>
-        <div class="frame" id="frame-1">
-          <img id="img-1" data-src="https://backend.wplace.live/files/s0/tiles/1746/793.png" alt="서울 태극기" />
-        </div>
-      </article>
-
-      <article class="card" id="card-2">
-        <div class="card-header">
-          <div class="meta">
-            <strong>독도 태극기</strong>
-          </div>
-          <a href="https://wplace.live/?lat=37.268457763793734&lng=131.87452115302733&zoom=12.708937213958524"
-            target="_blank" class="goto-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-            </svg>
-            바로 가기
-          </a>
-        </div>
-        <div class="frame" id="frame-2">
-          <img id="img-2" data-src="https://backend.wplace.live/files/s0/tiles/1774/795.png" alt="독도 태극기" />
-        </div>
-      </article>
-
-            <article class="card" id="card-백두산">
-        <div class="card-header">
-          <div class="meta">
-            <strong>백두산 태극기</strong>
-          </div>
-          <a href="https://wplace.live/?lat=42.00731372955743&lng=128.05426724677733&zoom=13.089715435939786"
-            target="_blank" class="goto-btn">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path
-                d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z" />
-            </svg>
-            바로 가기
-          </a>
-        </div>
-        <div class="frame" id="frame-백두산">
-          <img id="img-백두산" data-src="https://backend.wplace.live/files/s0/tiles/1752/760.png" alt="백두산 태극기" />
-        </div>
-      </article>
+    <main class="grid" id="zonesGrid">
+      <div class="loading">봇 데이터를 불러오는 중...</div>
     </main>
 
-    <!-- 태극기 주변 -->
-    <section class="featured">
-      <h1>태극기 주변</h1>
-      <p class="notice">※ 태극기 주변 이미지는 자동으로 새로고침되지 않습니다. 잦은 새로고침은 제한이 걸릴 수 있으니 주의해 주세요.</p>
-      <div class="card" style="padding:20px; max-width:640px; margin:0 auto; text-align:center;">
-        <div class="meta">
-          <strong>서울 태극기 주변</strong>
-        </div>
-        <div class="tile-grid">
-          <img id="tile-1" data-src="https://backend.wplace.live/files/s0/tiles/1745/792.png" alt="타일 1-1" />
-          <img id="tile-2" data-src="https://backend.wplace.live/files/s0/tiles/1746/792.png" alt="타일 1-2" />
-          <img id="tile-3" data-src="https://backend.wplace.live/files/s0/tiles/1747/792.png" alt="타일 1-3" />
-          <img id="tile-4" data-src="https://backend.wplace.live/files/s0/tiles/1745/793.png" alt="타일 2-1" />
-          <img id="tile-5" data-src="https://backend.wplace.live/files/s0/tiles/1746/793.png" alt="타일 2-2" />
-          <img id="tile-6" data-src="https://backend.wplace.live/files/s0/tiles/1747/793.png" alt="타일 2-3" />
-          <img id="tile-7" data-src="https://backend.wplace.live/files/s0/tiles/1745/794.png" alt="타일 3-1" />
-          <img id="tile-8" data-src="https://backend.wplace.live/files/s0/tiles/1746/794.png" alt="타일 3-2" />
-          <img id="tile-9" data-src="https://backend.wplace.live/files/s0/tiles/1747/794.png" alt="타일 3-3" />
-        </div>
-      </div>
-    </section>
-
-    <!-- 주요 작품 -->
-    <section class="featured">
-      <h1>주요 작품 (NSFW)</h1>
-      <p class="notice">⚠️ 모든 주요 작품들이 Wplace 관리자들에게 삭제당하였습니다. 바로 가기 버튼을 누르면 아카이브 링크로 리다이렉트됩니다.</p>
-      <div class="grid">
-        <article class="card" id="card-3">
-          <div class="card-header">
-            <div class="meta">
-              <strong>거쿠</strong>
-            </div>
-            <a href="https://wplace.eralyon.net/?lat=36.513472&lng=126.676221&zoom=11.72&version=v41.028" target="_blank" class="goto-btn">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              아카이브 바로 가기
-            </a>
-          </div>
-          <div class="frame" id="frame-3">
-            <img id="img-3" data-src="images/tiles/거쿠 - 백업 타일.png" alt="거쿠" />
-          </div>
-        </article>
-        <article class="card" id="card-4">
-          <div class="card-header">
-            <div class="meta">
-              <strong>통깡이</strong>
-            </div>
-            <a href="https://wplace.eralyon.net/?lat=37.239475&lng=127.412713&zoom=12.57&version=v45" target="_blank" class="goto-btn">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              아카이브 바로 가기
-            </a>
-          </div>
-          <div class="frame" id="frame-4">
-            <img id="img-4" data-src="images/tiles/통깡이 - 백업 타일.png" alt="통깡이" />
-          </div>
-        </article>
-        <article class="card" id="card-5">
-          <div class="card-header">
-            <div class="meta">
-              <strong>토끼굴 미쿠</strong>
-            </div>
-            <a href="https://wplace.eralyon.net/?lat=36.616830&lng=126.667626&zoom=12.97&version=v40.028" target="_blank" class="goto-btn">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              아카이브 바로 가기
-            </a>
-          </div>
-          <div class="frame" id="frame-5">
-            <img id="img-5" data-src="images/tiles/토끼굴 미쿠 - 백업 타일.png" alt="토끼굴 미쿠" />
-          </div>
-        </article>
-        <article class="card" id="card-6">
-          <div class="card-header">
-            <div class="meta">
-              <strong>타치바나 노조미</strong>
-            </div>
-            <a href="https://wplace.eralyon.net/?lat=35.680997&lng=127.220835&zoom=12.87&version=v41.148" target="_blank" class="goto-btn">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
-              </svg>
-              아카이브 바로 가기
-            </a>
-          </div>
-          <div class="frame" id="frame-6">
-            <img id="img-6" data-src="images/tiles/타치바나 노조미 - 백업 타일.png" alt="타치바나 노조미" />
-          </div>
-        </article>
-      </div>
-    </section>
+    <footer>
+      만든 놈 - <a href="discord://-/users/1143199445035536404">OrangeBlue</a>
+      <br>
+      <small>Powered by Wcam Bot</small>
+    </footer>
   </div>
 
-  <footer>
-    만든 놈 - <a href="discord://-/users/1143199445035536404">OrangeBlue</a>
-  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script>
+    // 구역 설정
+    const zones = [
+      {
+        name: "독도 태극기",
+        tileUrl: "https://backend.wplace.live/files/s0/tiles/1774/795.png",
+        wplaceUrl: "https://wplace.live/?lat=37.268457763793734&lng=131.87452115302733&zoom=12.708937213958524",
+        x: 40, y: 100, width: 361, height: 261
+      },
+      
+      {
+        name: "서울 태극기",
+        tileUrl: "https://backend.wplace.live/files/s0/tiles/1746/793.png",
+        wplaceUrl: "https://wplace.live/?lat=37.475207106049986&lng=127.00274380927735&zoom=12.997432909015853",
+        x: 420, y: 691, width: 160, height: 120
+      },
+      
+      {
+        name: "백두산 태극기",
+        tileUrl: "https://backend.wplace.live/files/s0/tiles/1752/760.png",
+        wplaceUrl: "https://wplace.live/?lat=42.00731372955743&lng=128.05426724677733&zoom=13.089715435939786",
+        x: 374, y: 111, width: 204, height: 159
+      }
+    ];
 
-  <script src="js/script.js"></script>
+    // 봇 API 주소 설정 ${{ secrets.BOT_API_URL }}
+    const BOT_API_URL = 'https://wcam-api.snackcandy105.workers.dev/';
+
+    // 데이터 저장소
+    const zoneData = {};
+    const charts = {};
+
+    function initDarkMode() {
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const sunIcon = document.getElementById('sunIcon');
+  const moonIcon = document.getElementById('moonIcon');
+  
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+  updateIcons(savedTheme);
+
+  darkModeToggle.addEventListener('click', () => {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    
+    // 회전 애니메이션 추가
+    darkModeToggle.classList.add('rotating');
+    setTimeout(() => {
+      darkModeToggle.classList.remove('rotating');
+    }, 300);
+    
+    document.documentElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateIcons(newTheme);
+    
+    // 차트 색상 업데이트
+    Object.values(charts).forEach(chart => {
+      if (chart) {
+        chart.options.scales.y.ticks.color = newTheme === 'dark' ? '#e0e0e0' : '#666';
+        chart.options.scales.x.ticks.color = newTheme === 'dark' ? '#e0e0e0' : '#666';
+        chart.options.scales.y.grid.color = newTheme === 'dark' ? '#444' : '#e0e0e0';
+        chart.options.scales.x.grid.color = newTheme === 'dark' ? '#444' : '#e0e0e0';
+        chart.update('none');
+      }
+    });
+  });
+
+  function updateIcons(theme) {
+    if (theme === 'dark') {
+      sunIcon.style.display = 'none';
+      moonIcon.style.display = 'block';
+    } else {
+      sunIcon.style.display = 'block';
+      moonIcon.style.display = 'none';
+    }
+  }
+}
+
+    // 구역 카드 생성
+    function createZoneCard(zone, index) {
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      
+      return `
+        <article class="card" id="card-${index}">
+          <div class="card-header">
+            <strong>${zone.name}</strong>
+            <a href="${zone.wplaceUrl}" target="_blank" class="goto-btn">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+              바로 가기
+            </a>
+          </div>
+          
+          <div class="match-info">
+            <div>
+              <div style="font-size: 12px; color: #666;">현재 일치율</div>
+              <div class="match-percentage" id="match-${index}">--%</div>
+            </div>
+            <div style="text-align: right; font-size: 12px; color: #666;">
+              <div>기준: <span id="threshold-${index}">90</span>%</div>
+            </div>
+          </div>
+          
+          <div class="pixel-info" id="pixel-info-${index}" style="font-size: 14px; color: #888; text-align: center; margin-bottom: 8px;">
+            픽셀 정보 로딩 중...
+          </div>
+          
+          <div class="frame" id="frame-${index}">
+            <img id="img-${index}" src="${zone.tileUrl}" alt="${zone.name}" />
+          </div>
+          
+          <div class="chart-container">
+            <canvas id="chart-${index}"></canvas>
+          </div>
+          
+          <div class="last-updated" id="updated-${index}">
+            업데이트 대기 중...
+          </div>
+        </article>
+      `;
+    }
+
+    // 차트 생성
+    function createChart(index) {
+      const ctx = document.getElementById(`chart-${index}`);
+      if (!ctx) return null;
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+      const textColor = isDark ? '#e0e0e0' : '#666';
+      const gridColor = isDark ? '#444' : '#e0e0e0';
+
+      return new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: '일치율 (%)',
+            data: [],
+            borderColor: 'rgb(0, 85, 255)',
+            backgroundColor: 'rgba(0, 85, 255, 0.1)',
+            borderWidth: 2,
+            tension: 0,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: false,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              mode: 'index',
+              intersect: false,
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              min: 80,
+              max: 100,
+              ticks: {
+                color: textColor,
+                callback: function(value) {
+                  return value + '%';
+                }
+              },
+              grid: {
+                color: gridColor
+              }
+            },
+            x: {
+              ticks: {
+                color: textColor,
+                maxTicksLimit: 6
+              },
+              grid: {
+                color: gridColor
+              }
+            }
+          },
+          interaction: {
+            mode: 'nearest',
+            axis: 'x',
+            intersect: false
+          }
+        }
+      });
+    }
+
+    // 일치율 업데이트
+    function updateMatchPercentage(index, percentage, threshold = 90) {
+      const matchEl = document.getElementById(`match-${index}`);
+      const thresholdEl = document.getElementById(`threshold-${index}`);
+      const cardEl = document.getElementById(`card-${index}`);
+      
+      if (matchEl) {
+        matchEl.textContent = percentage.toFixed(2) + '%';
+        matchEl.className = 'match-percentage';
+
+        // 카드 상태 초기화
+        if (cardEl) {
+          cardEl.classList.remove('warning', 'danger');
+        }
+        
+        if (percentage >= 95) {
+          matchEl.classList.add('good');
+        } else if (percentage >= 90) {
+          matchEl.classList.add('warning');
+          if (cardEl) cardEl.classList.add('warning');
+        } else {
+          matchEl.classList.add('danger');
+          if (cardEl) cardEl.classList.add('danger');
+        }
+      }
+      
+      if (thresholdEl) {
+        thresholdEl.textContent = threshold;
+      }
+    }
+
+    // 픽셀 정보 업데이트
+    function updatePixelInfo(index, zoneData) {
+      const pixelInfoEl = document.getElementById(`pixel-info-${index}`);
+      if (!pixelInfoEl) return;
+      
+      // API에서 픽셀 정보가 있는지 확인
+      if (zoneData.totalPixels && zoneData.matchPixels !== undefined && zoneData.diffPixels !== undefined) {
+        const matchPixels = zoneData.matchPixels.toLocaleString();
+        const totalPixels = zoneData.totalPixels.toLocaleString();
+        const diffPixels = zoneData.diffPixels.toLocaleString();
+        
+        pixelInfoEl.innerHTML = `일치: ${matchPixels}/${totalPixels} | 불일치: ${diffPixels}개`;
+      } else {
+        pixelInfoEl.textContent = '픽셀 정보 없음';
+      }
+    }
+
+    // 구역 데이터 가져오기
+async function fetchZonesData() {
+    try {
+        const response = await fetch(`${BOT_API_URL}/api/zones`);
+        const data = await response.json();
+        
+        if (data.success) {
+            data.zones.forEach((zoneData, index) => {
+                if (zoneData.matchPercentage !== null) {
+                    updateMatchPercentage(index, zoneData.matchPercentage, zoneData.threshold);
+                    updateChart(index, zoneData.matchPercentage);
+                    
+                    // 픽셀 정보 업데이트
+                    updatePixelInfo(index, zoneData);
+                }
+                
+                // 마지막 체크 시간 업데이트
+                if (zoneData.lastChecked) {
+                    const time = new Date(zoneData.lastChecked);
+                    const updatedEl = document.getElementById(`updated-${index}`);
+                    if (updatedEl) {
+                        updatedEl.textContent = `최근 업데이트: ${time.getHours()}:${time.getMinutes().toString().padStart(2, '0')}`;
+                        updatedEl.dataset.timestamp = zoneData.lastChecked;
+                    }
+                }
+            });
+            
+            updateAverageMatch();
+        }
+    } catch (error) {
+        console.error('구역 데이터 로드 실패:', error);
+    }
+}
+
+    // 차트 데이터 업데이트
+    function updateChart(index, percentage) {
+      const chart = charts[index];
+      if (!chart) return;
+
+      const now = new Date();
+      const timeLabel = now.getHours().toString().padStart(2, '0') + ':' + 
+                       now.getMinutes().toString().padStart(2, '0');
+
+      chart.data.labels.push(timeLabel);
+      chart.data.datasets[0].data.push(percentage);
+
+      // 최대 20개 데이터 포인트만 유지
+      if (chart.data.labels.length > 20) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+      }
+
+      chart.update('none');
+    }
+
+    // 이미지 새로고침 (실제 봇 API 사용)
+async function refreshImage(zone, index) {
+    try {
+        const img = document.getElementById(`img-${index}`);
+        if (!img) return;
+
+        // 봇 API에서 이미지 가져오기
+        const imageUrl = `${BOT_API_URL}/api/zone/${encodeURIComponent(zone.name)}/image?t=${Date.now()}`;
+        
+        const preload = new Image();
+        preload.onload = () => {
+            img.src = imageUrl;
+        };
+        preload.onerror = () => {
+            console.warn('이미지 로드 실패, 원본 타일 사용');
+            img.src = zone.tileUrl + '?t=' + Date.now();
+        };
+        preload.src = imageUrl;
+
+    } catch (error) {
+        console.error('이미지 새로고침 오류:', error);
+    }
+}
+
+// 마지막 갱신 시간 업데이트 (봇 데이터 기준)
+function updateLastRefreshTime() {
+  // 모든 구역 중 가장 최근 업데이트 시간 찾기
+  let latestTime = null;
+  
+  zones.forEach((_, index) => {
+    const updatedEl = document.getElementById(`updated-${index}`);
+    if (updatedEl && updatedEl.dataset.timestamp) {
+      const time = new Date(updatedEl.dataset.timestamp);
+      if (!latestTime || time > latestTime) {
+        latestTime = time;
+      }
+    }
+  });
+  
+  const lastUpdateEl = document.getElementById('lastUpdate');
+  if (lastUpdateEl && latestTime) {
+    lastUpdateEl.textContent = `${latestTime.getHours()}:${latestTime.getMinutes().toString().padStart(2, '0')}`;
+  } else if (lastUpdateEl) {
+    const now = new Date();
+    lastUpdateEl.textContent = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+  }
+}
+
+// 모든 구역 새로고침
+async function refreshAllZones() {
+    await checkBotStatus();
+    await fetchZonesData();
+    
+    for (let i = 0; i < zones.length; i++) {
+        await refreshImage(zones[i], i);
+    }
+      
+      // 평균 일치율 업데이트
+      updateAverageMatch();
+      
+      // 마지막 갱신 시간 업데이트 - 봇 API 데이터 기준
+      updateLastRefreshTime();
+}
+
+    // 평균 일치율 계산
+    function updateAverageMatch() {
+      let total = 0;
+      let count = 0;
+      
+      zones.forEach((_, index) => {
+        const matchEl = document.getElementById(`match-${index}`);
+        if (matchEl && matchEl.textContent !== '--%') {
+          const value = parseFloat(matchEl.textContent);
+          if (!isNaN(value)) {
+            total += value;
+            count++;
+          }
+        }
+      });
+
+      const avgEl = document.getElementById('avgMatch');
+
+      if (avgEl && count > 0) {
+        avgEl.textContent = (total / count).toFixed(1) + '%';
+      }
+    }
+
+    // 봇 상태 확인
+    async function checkBotStatus() {
+         try {
+             const response = await fetch(`${BOT_API_URL}/api/status`);
+             const data = await response.json();
+        
+             updateBotStatus(data.online);
+        
+             // 통계 업데이트
+             document.getElementById('activeServers').textContent = data.totalServers;
+             document.getElementById('totalZones').textContent = data.totalZones;
+        
+         } catch (error) {
+             console.error('봇 상태 확인 실패:', error);
+             updateBotStatus(false);
+         }
+      }
+
+      // 봇 상태 업데이트
+    function updateBotStatus(isOnline) {
+      const indicator = document.getElementById('botStatusIndicator');
+      const text = document.getElementById('botStatusText');
+      
+      if (indicator && text) {
+        if (isOnline) {
+          indicator.classList.remove('offline');
+          text.textContent = '온라인';
+        } else {
+          indicator.classList.add('offline');
+          text.textContent = '오프라인';
+        }
+      }
+    }
+
+    // 초기화
+    async function init() {
+      initDarkMode();
+
+
+      
+      // 구역 카드 생성
+      const grid = document.getElementById('zonesGrid');
+      grid.innerHTML = zones.map((zone, index) => createZoneCard(zone, index)).join('');
+      
+      // 차트 초기화
+      zones.forEach((_, index) => {
+        charts[index] = createChart(index);
+      });
+      
+      // 봇 상태 (실제로는 API 체크 필요)
+      updateBotStatus(true);
+      
+      // 초기 데이터 로드
+      await refreshAllZones();
+      
+      // 30초마다 자동 새로고침
+      setInterval(refreshAllZones, 30000);
+    }
+
+    // 페이지 로드 시 초기화
+    window.addEventListener('DOMContentLoaded', init);
+
+  </script>
 </body>
-
 </html>
