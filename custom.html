@@ -1156,7 +1156,7 @@ async function checkServerStatus() {
   try {
     // wplace.live의 favicon.ico는 용량이 작고 캐시 정책이 짧아 확인용으로 적합합니다.
     // Date.now()를 쿼리로 추가하여 캐시를 무시하고 항상 새로 요청합니다.
-    const response = await fetch('https://wplace-cors-proxy.snackcandy105.workers.dev/?url=https://backend.wplace.live/tile/1774/795.png?t=' + Date.now( ), {
+    const response = await fetch('https://wplace-cors-proxy.snackcandy105.workers.dev/?url=https://backend.wplace.live/files/s0/tiles/1774/795.png?t=' + Date.now( ), {
       method: 'HEAD', // HEAD 메소드로 요청하면 본문 없이 헤더만 받아와 빠릅니다.
       signal: controller.signal,
       cache: 'no-store' // 캐시 사용 안함
@@ -1358,7 +1358,7 @@ checkServerStatus();
       cardElement.className = 'card';
       cardElement.id = `card-${cardId}`;
       
-      const imageUrl = `https://backend.wplace.live/tile/${cardData.tileX}/${cardData.tileY}.png`;
+      const imageUrl = `https://backend.wplace.live/files/s0/tiles/${cardData.tileX}/${cardData.tileY}.png`;
       
       let buttonsHtml = '';
       if (cardData.shareLink) {
@@ -1623,7 +1623,7 @@ CORS 오류 발생시 새 탭에서 원본 이미지가 열립니다.<br> 이 �
       document.getElementById('shareLink').value = card.shareLink || '';
       
       // 미리보기 이미지 로드
-      const imageUrl = `https://backend.wplace.live/tile/${card.tileX}/${card.tileY}.png`;
+      const imageUrl = `https://backend.wplace.live/files/s0/tiles/${card.tileX}/${card.tileY}.png`;
       const previewImg = document.getElementById('previewImage');
       previewImg.src = imageUrl;
       document.getElementById('previewSection').style.display = 'block';
@@ -1694,7 +1694,7 @@ cancelBtn.addEventListener('click', () => {
         return;
       }
       
-      const imageUrl = `https://backend.wplace.live/tile/${tileX}/${tileY}.png`;
+      const imageUrl = `https://backend.wplace.live/files/s0/tiles/${tileX}/${tileY}.png`;
       const previewImg = document.getElementById('previewImage');
       
       previewImg.src = imageUrl;
@@ -1780,7 +1780,7 @@ cancelBtn.addEventListener('click', () => {
           const frame = document.getElementById(`frame-${cardId}`);
           const cardEl = document.getElementById(`card-${cardId}`);
           if (img) {
-            const imageUrl = `https://backend.wplace.live/tile/${cardData.tileX}/${cardData.tileY}.png`;
+            const imageUrl = `https://backend.wplace.live/files/s0/tiles/${cardData.tileX}/${cardData.tileY}.png`;
             img.dataset.src = imageUrl;
             img.src = imageUrl + '?t=' + Date.now();
             img.onload = () => {
