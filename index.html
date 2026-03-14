@@ -35,6 +35,83 @@
 
   <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
   <style>
+        /* ===== URL 이전 공지 모달 ===== */
+.notice-modal {
+  display: none;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0);
+  transition: background-color 0.3s ease;
+}
+
+.notice-modal.show {
+  background-color: rgba(0,0,0,0.5);
+}
+
+.notice-modal.show .notice-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.notice-content {
+  background: var(--card-bg);
+  color: var(--text-color);
+  border-radius: 16px;
+  padding: 32px 28px 24px;
+  width: 90%;
+  max-width: 520px;
+  margin: 5% auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+  transform: scale(0.7) translateY(-100px);
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.notice-modal.show .notice-content {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.notice-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--accent);
+  text-align: center;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.notice-body {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-color);
+  opacity: 0.85;
+  margin-bottom: 24px;
+}
+
+.notice-close-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #0055ff, #0099ff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.notice-close-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
     :root {
       --frame-bg: #e6e5e5;
       --gap: 18px;
@@ -953,5 +1030,43 @@ async function refreshAllZones() {
     window.addEventListener('DOMContentLoaded', init);
 
   </script>
+    <!-- URL 이전 공지 모달 -->
+<div id="noticeModal" class="notice-modal">
+  <div class="notice-content">
+    <div class="notice-title">
+      Wplace 감시기 URL이 이전됩니다.<br>
+      wplacebackend.github.io <br> ↓ <br> <a href="https://orangeblue2336.github.io/wplace" style="color:#FF5733;" target="_blank">orangeblue2336.github.io/wplace</a>
+    </div>
+    <div class="notice-body">
+      개발자 Github 계정 통합으로 인하여 <strong>2026년 4월 1일부터 새 주소로 이전</strong>되며<br> 
+      현재 사이트는 이용이 제한될 예정입니다.<br>
+      북마크 및 공유 링크를 새 주소로 변경해 주세요.<br><br>
+      이미 봇 API는 새 주소로 이전되어 운영 중이며 현재 대시보드는 정상작동하지 않습니다.<br>
+      4월 15일까지 기존 주소로 접속시 새 주소로 리다이렉트 되며 이후에는 완전히 폐쇄될 예정입니다.<br>
+    </div>
+    <button class="notice-close-btn" id="noticeCloseBtn">확인했습니다</button>
+  </div>
+</div>
+
+<script>
+    // ===== URL 이전 공지 모달 =====
+(function() {
+  const noticeModal = document.getElementById('noticeModal');
+  const noticeCloseBtn = document.getElementById('noticeCloseBtn');
+
+  // 접속할 때마다 항상 표시
+  noticeModal.style.display = 'block';
+  setTimeout(() => {
+    noticeModal.classList.add('show');
+  }, 10);
+
+  noticeCloseBtn.addEventListener('click', () => {
+    noticeModal.classList.remove('show');
+    setTimeout(() => {
+      noticeModal.style.display = 'none';
+    }, 300);
+  });
+})();
+</script>
 </body>
 </html>
